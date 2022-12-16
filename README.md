@@ -1,4 +1,4 @@
 # Auto-Brightness
 For any Pc
 
-Script for your own time
+Script for your settings
