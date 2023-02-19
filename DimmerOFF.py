@@ -1,7 +1,4 @@
 import screen_brightness_control as sbc
-import datetime
-from datetime import date
-from threading import Timer
 
 brightness = sbc.get_brightness()# get brightness of monitor
 global primary
