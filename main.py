@@ -11,11 +11,11 @@ def calculate_brightness(frame):
 
     return brightness
 
-def main():
 
-    brightness = sbc.get_brightness()    # get brightness of primary monitor
-    global primary_monitor               # bad-coder)
-    primary_monitor = sbc.get_brightness(display=0)   # get brightness of primary monitor
+def main():
+    brightness = sbc.get_brightness()  # get brightness of primary monitor
+    global primary_monitor  # bad-coder)
+    primary_monitor = sbc.get_brightness(display=0)  # get brightness of primary monitor
     print(primary_monitor)
 
     # init web-cam
@@ -44,9 +44,6 @@ def main():
             sbc.set_brightness(30)
 
         print(sbc.get_brightness(display=0))
-        # Прерываем цикл, если нажата клавиша 'q'
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
 
     # Освобождаем ресурсы
     cap.release()
