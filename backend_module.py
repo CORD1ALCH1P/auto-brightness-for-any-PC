@@ -1,6 +1,14 @@
+import GUIAPP
+import subprocess
 import cv2
 import screen_brightness_control as sbc
 
+# default brightness level settings
+max_bright = 100
+pre_max_bright = 80
+half_bright = 60
+low_bright = 40
+min_bright = 30
 
 def calculate_brightness(frame):
     # converting frame to gray
@@ -30,18 +38,28 @@ def main():
 
         # print level AO brightness
         print(f"Brightness: {brightness}")
-
-        # here you can tune your own settings (sry for if logic)
+        #
+        # # here you can tune your own settings (sry for if logic)
+        # if brightness > 90:
+        #     sbc.set_brightness(max_bright)
+        # elif 80 <= brightness <= 90:
+        #     sbc.set_brightness(pre_max_bright)
+        # elif 70 <= brightness <= 80:
+        #     sbc.set_brightness(half_bright)
+        # elif 50 <= brightness <= 70:
+        #     sbc.set_brightness(low_bright)
+        # else:
+        #     sbc.set_brightness(min_bright)
         if brightness > 90:
-            sbc.set_brightness(100)
+            subprocess.run(["python", "backend_module.py", str(max_bright)])
         elif 80 <= brightness <= 90:
-            sbc.set_brightness(80)
+            subprocess.run(["python", "backend_module.py", str(pre_max_bright)])
         elif 70 <= brightness <= 80:
-            sbc.set_brightness(60)
+            subprocess.run(["python", "backend_module.py", str(half_bright)])
         elif 50 <= brightness <= 70:
-            sbc.set_brightness(40)
+            subprocess.run(["python", "backend_module.py", str(low_bright)])
         else:
-            sbc.set_brightness(30)
+            subprocess.run(["python", "backend_module.py", str(min_bright)])
 
         print(sbc.get_brightness(display=0))
 

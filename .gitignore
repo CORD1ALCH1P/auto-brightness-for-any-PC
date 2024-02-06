@@ -1,2 +1,4 @@
 .Dimmer.py
 .DimmerOFF.py
+/build
+/dist
