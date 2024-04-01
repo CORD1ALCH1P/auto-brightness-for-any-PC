@@ -44,11 +44,11 @@ def main():
             sbc.set_brightness(30)
 
         print(sbc.get_brightness(display=0))
-        # Прерываем цикл, если нажата клавиша 'q'
+        # 'q' for exit
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    # Освобождаем ресурсы
+    # clear resources
     cap.release()
     cv2.destroyAllWindows()
 
