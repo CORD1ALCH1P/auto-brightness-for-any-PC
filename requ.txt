@@ -1,4 +1,0 @@
-pip install screen-brightness-control
-pip install opencv-python pyautogui
-
-tested on py3.11
