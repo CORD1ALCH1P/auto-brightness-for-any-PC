@@ -149,4 +149,4 @@ Most of them can also be changed through the GUI.
 
 ## License
 
-MIT
+
