@@ -11,6 +11,17 @@ from auto_start import AutoStartManager
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
+# Color palette
+_ACCENT      = "#3b82f6"
+_ACCENT_HOV  = "#2563eb"
+_BTN_MUTED   = "#252525"
+_BTN_MUT_HOV = "#2e2e2e"
+_SEP         = "#2a2a2a"
+_TEXT_MUTED  = "#6b7280"
+_GREEN       = "#10b981"
+_AMBER       = "#f59e0b"
+_RED         = "#ef4444"
+
 class BrightnessGUI(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -23,7 +34,7 @@ class BrightnessGUI(ctk.CTk):
         self.should_exit = False
 
         self.title("Auto Brightness")
-        self.geometry("400x330")
+        self.geometry("400x280")
         self.resizable(False, False)
 
         self.protocol("WM_DELETE_WINDOW", self.minimize_to_tray)
@@ -42,193 +53,178 @@ class BrightnessGUI(ctk.CTk):
 
     def setup_ui(self):
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
-        main_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        main_frame.pack(fill="both", expand=True, padx=24, pady=20)
 
-        title = ctk.CTkLabel(
-            main_frame,
-            text="Auto Brightness",
-            font=ctk.CTkFont(size=20, weight="bold")
-        )
-        title.pack(pady=(0, 15))
-
-        status_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        status_frame.pack(fill="x", pady=(0, 15))
+        # ── Header ────────────────────────────────────────────────────────────
+        header = ctk.CTkFrame(main_frame, fg_color="transparent")
+        header.pack(fill="x", pady=(0, 4))
 
         ctk.CTkLabel(
-            status_frame,
-            text="Status:",
-            font=ctk.CTkFont(size=12)
+            header,
+            text="Auto Brightness",
+            font=ctk.CTkFont(size=17, weight="bold"),
+            text_color="#ffffff"
         ).pack(side="left")
 
-        self.status_label = ctk.CTkLabel(
-            status_frame,
-            text="Idle",
-            font=ctk.CTkFont(size=12, weight="bold"),
-            text_color="#90EE90"
+        self.status_dot = ctk.CTkLabel(
+            header, text="●",
+            font=ctk.CTkFont(size=10),
+            text_color=_GREEN, width=14
         )
-        self.status_label.pack(side="left", padx=(10, 0))
+        self.status_dot.pack(side="right", padx=(4, 0))
 
-        button_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        button_frame.pack(fill="x", pady=(0, 20))
+        self.status_label = ctk.CTkLabel(
+            header,
+            text="Idle",
+            font=ctk.CTkFont(size=11),
+            text_color=_TEXT_MUTED
+        )
+        self.status_label.pack(side="right")
+
+        # ── Separator ─────────────────────────────────────────────────────────
+        ctk.CTkFrame(main_frame, height=1, fg_color=_SEP).pack(fill="x", pady=(8, 14))
+
+        # ── Buttons ───────────────────────────────────────────────────────────
+        btn_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
+        btn_frame.pack(fill="x", pady=(0, 14))
 
         self.start_button = ctk.CTkButton(
-            button_frame,
-            text="Start",
+            btn_frame, text="Start",
             command=self.start_controller,
-            height=40,
-            font=ctk.CTkFont(size=13, weight="bold")
+            height=34, corner_radius=8,
+            font=ctk.CTkFont(size=12, weight="bold"),
+            fg_color=_ACCENT, hover_color=_ACCENT_HOV
         )
-        self.start_button.pack(side="left", fill="both", expand=True, padx=(0, 10))
+        self.start_button.pack(side="left", fill="both", expand=True, padx=(0, 6))
 
         self.stop_button = ctk.CTkButton(
-            button_frame,
-            text="Stop",
+            btn_frame, text="Stop",
             command=self.stop_controller,
-            height=40,
-            font=ctk.CTkFont(size=13, weight="bold"),
+            height=34, corner_radius=8,
+            font=ctk.CTkFont(size=12, weight="bold"),
             state="disabled",
-            fg_color="#444444"
+            fg_color=_BTN_MUTED, hover_color=_BTN_MUT_HOV,
+            text_color=_TEXT_MUTED
         )
         self.stop_button.pack(side="left", fill="both", expand=True)
 
-        interval_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        interval_frame.pack(fill="x")
+        # ── Separator ─────────────────────────────────────────────────────────
+        ctk.CTkFrame(main_frame, height=1, fg_color=_SEP).pack(fill="x", pady=(0, 12))
+
+        # ── Interval slider ───────────────────────────────────────────────────
+        interval_row = ctk.CTkFrame(main_frame, fg_color="transparent")
+        interval_row.pack(fill="x", pady=(0, 6))
 
         ctk.CTkLabel(
-            interval_frame,
-            text="Update interval:",
-            font=ctk.CTkFont(size=11)
-        ).pack(anchor="w")
-
-        slider_frame = ctk.CTkFrame(interval_frame, fg_color="transparent")
-        slider_frame.pack(fill="x", pady=(5, 0))
-
-        self.interval_slider = ctk.CTkSlider(
-            slider_frame,
-            from_=0.5,
-            to=10,
-            number_of_steps=95,
-            command=self.on_interval_change,
-            height=20
-        )
-        self.interval_slider.pack(side="left", fill="x", expand=True, padx=(0, 10))
+            interval_row, text="Update interval",
+            font=ctk.CTkFont(size=11), text_color=_TEXT_MUTED
+        ).pack(side="left")
 
         self.interval_label = ctk.CTkLabel(
-            slider_frame,
-            text="1.0s",
-            font=ctk.CTkFont(size=11),
-            width=35
+            interval_row, text="1.0s",
+            font=ctk.CTkFont(size=11, weight="bold"),
+            text_color="#ffffff"
         )
-        self.interval_label.pack(side="left")
+        self.interval_label.pack(side="right")
 
-        autostart_frame = ctk.CTkFrame(main_frame, fg_color="transparent")
-        autostart_frame.pack(fill="x", pady=(18, 0))
+        self.interval_slider = ctk.CTkSlider(
+            main_frame,
+            from_=0.5, to=10, number_of_steps=95,
+            command=self.on_interval_change,
+            height=14,
+            button_color=_ACCENT, button_hover_color=_ACCENT_HOV,
+            progress_color=_ACCENT
+        )
+        self.interval_slider.pack(fill="x", pady=(0, 14))
 
+        # ── Autostart checkbox ────────────────────────────────────────────────
         self.autostart_checkbox = ctk.CTkCheckBox(
-            autostart_frame,
-            text="Start with Windows",
+            main_frame, text="Start with Windows",
             command=self.on_autostart_change,
-            font=ctk.CTkFont(size=11)
+            font=ctk.CTkFont(size=11),
+            text_color=_TEXT_MUTED,
+            fg_color=_ACCENT, hover_color=_ACCENT_HOV,
+            checkmark_color="#ffffff",
+            border_color="#3d3d3d",
+            corner_radius=4
         )
         self.autostart_checkbox.pack(anchor="w")
 
+    # ── Tray icon image ────────────────────────────────────────────────────────
     def create_icon_image(self):
-        img = Image.new('RGB', (64, 64), color='#1f6aa5')
+        img = Image.new('RGB', (64, 64), color='#1a1a1a')
         draw = ImageDraw.Draw(img)
-
-        center = 32
-        radius = 20
-        draw.ellipse([center-radius, center-radius, center+radius, center+radius],
-                     fill='#FFD700', outline='#FFA500', width=2)
-
+        center, radius = 32, 20
+        draw.ellipse(
+            [center-radius, center-radius, center+radius, center+radius],
+            fill='#FFD700', outline='#FFA500', width=2
+        )
         for i in range(8):
             angle = (i * 45) * math.pi / 180
-            x1 = center + int((radius-3) * math.cos(angle))
-            y1 = center + int((radius-3) * math.sin(angle))
-            x2 = center + int((radius+8) * math.cos(angle))
-            y2 = center + int((radius+8) * math.sin(angle))
+            x1 = center + int((radius - 3) * math.cos(angle))
+            y1 = center + int((radius - 3) * math.sin(angle))
+            x2 = center + int((radius + 8) * math.cos(angle))
+            y2 = center + int((radius + 8) * math.sin(angle))
             draw.line([(x1, y1), (x2, y2)], fill='#FFA500', width=2)
-
         return img
 
+    # ── Tray ──────────────────────────────────────────────────────────────────
     def start_tray_thread(self):
-        """Start tray in separate thread"""
         self.tray_thread = Thread(target=self.setup_tray, daemon=False)
         self.tray_thread.start()
 
     def setup_tray(self):
-        """Setup tray icon"""
         try:
             print("[INFO] Creating tray icon...")
-            icon = self.create_icon_image()
-
             menu = pystray.Menu(
                 pystray.MenuItem('Show', self.show_window),
                 pystray.MenuItem('Hide', self.hide_window),
                 pystray.MenuItem('Exit', self.exit_app)
             )
-
             self.tray_icon = pystray.Icon(
-                "AutoBrightness",
-                icon,
-                "Auto Brightness",
-                menu=menu
+                "AutoBrightness", self.create_icon_image(),
+                "Auto Brightness", menu=menu
             )
-
             print("[OK] Tray icon ready")
             self.tray_icon.run()
-
         except Exception as e:
             print(f"[ERROR] Tray error: {e}")
         finally:
             print("[INFO] Tray thread ended")
 
     def show_window(self, icon=None, item=None):
-        """Show window from tray"""
         self.deiconify()
         self.lift()
         self.focus()
-        print("[OK] Window shown")
 
     def hide_window(self, icon=None, item=None):
-        """Hide to tray"""
         self.withdraw()
-        print("[OK] Hidden to tray")
 
     def exit_app(self, icon=None, item=None):
-        """Called from pystray thread — schedule shutdown on main thread to avoid deadlock"""
-        print("[INFO] Exit requested from tray menu")
+        """Called from pystray thread — hand off to main thread to avoid deadlock."""
         self.should_exit = True
-        # Schedule the actual exit on the Tkinter main thread.
-        # Calling tray_icon.stop() from within a pystray callback deadlocks,
-        # so we hand off to the main thread and return immediately.
         self.after(0, self._do_exit)
 
     def _do_exit(self):
-        """Perform complete shutdown on the main Tkinter thread"""
-        print("[INFO] Performing exit...")
-
-        # Stop tray icon — safe to call from main thread
+        """Shutdown on the Tkinter main thread."""
         if self.tray_icon:
             try:
                 self.tray_icon.stop()
-            except Exception as e:
-                print(f"[WARN] Tray stop error: {e}")
+            except Exception:
+                pass
 
-        # Stop brightness controller directly (skip GUI updates, we're quitting)
         if self.running:
             self.running = False
             self.controller.stop()
             if self.working_thread and self.working_thread.is_alive():
                 self.working_thread.join(timeout=2)
 
-        print("[OK] Exiting process")
         os._exit(0)
 
     def minimize_to_tray(self):
-        """Minimize on close button"""
         self.hide_window()
 
+    # ── Settings ──────────────────────────────────────────────────────────────
     def load_settings(self):
         try:
             interval = self.controller.config.get('update_interval', 1.0)
@@ -260,29 +256,30 @@ class BrightnessGUI(ctk.CTk):
         else:
             self.auto_start_manager.disable()
 
+    # ── Controller ────────────────────────────────────────────────────────────
     def start_controller(self):
+        if self.running:
+            return
         try:
-            if self.running:
-                return
-
             self.running = True
-            self.start_button.configure(state="disabled", fg_color="#444444")
-            self.stop_button.configure(state="normal", fg_color="#FF6B6B")
-            self.status_label.configure(text="Running", text_color="#FFD700")
+            self.start_button.configure(state="disabled", fg_color=_BTN_MUTED, text_color=_TEXT_MUTED)
+            self.stop_button.configure(state="normal", fg_color=_RED, hover_color="#dc2626", text_color="#ffffff")
+            self.status_label.configure(text="Running", text_color=_AMBER)
+            self.status_dot.configure(text_color=_AMBER)
             self.interval_slider.configure(state="disabled")
 
             self.working_thread = Thread(
-                target=self._run_controller_thread,
-                daemon=True
+                target=self._run_controller_thread, daemon=True
             )
             self.working_thread.start()
             print("[OK] Brightness control started")
         except Exception as e:
             print(f"[ERROR] {e}")
             self.running = False
-            self.start_button.configure(state="normal")
-            self.stop_button.configure(state="disabled")
-            self.status_label.configure(text="Error", text_color="#FF6B6B")
+            self.start_button.configure(state="normal", fg_color=_ACCENT, text_color="#ffffff")
+            self.stop_button.configure(state="disabled", fg_color=_BTN_MUTED, text_color=_TEXT_MUTED)
+            self.status_label.configure(text="Error", text_color=_RED)
+            self.status_dot.configure(text_color=_RED)
 
     def _run_controller_thread(self):
         try:
@@ -302,11 +299,13 @@ class BrightnessGUI(ctk.CTk):
         if self.working_thread and self.working_thread.is_alive():
             self.working_thread.join(timeout=2)
 
-        self.start_button.configure(state="normal", fg_color="#1f6aa5")
-        self.stop_button.configure(state="disabled", fg_color="#444444")
-        self.status_label.configure(text="Idle", text_color="#90EE90")
+        self.start_button.configure(state="normal", fg_color=_ACCENT, text_color="#ffffff")
+        self.stop_button.configure(state="disabled", fg_color=_BTN_MUTED, text_color=_TEXT_MUTED)
+        self.status_label.configure(text="Idle", text_color=_TEXT_MUTED)
+        self.status_dot.configure(text_color=_GREEN)
         self.interval_slider.configure(state="normal")
         print("[OK] Brightness control stopped")
+
 
 if __name__ == '__main__':
     app = BrightnessGUI()
