@@ -137,10 +137,8 @@ class BrightnessGUI(ctk.CTk):
         )
         self.interval_slider.pack(fill="x", pady=(0, 14))
 
-        # ── Autostart checkbox ────────────────────────────────────────────────
-        self.autostart_checkbox = ctk.CTkCheckBox(
-            main_frame, text="Start with Windows",
-            command=self.on_autostart_change,
+        # ── Checkboxes ────────────────────────────────────────────────────────
+        _cb_kwargs = dict(
             font=ctk.CTkFont(size=11),
             text_color=_TEXT_MUTED,
             fg_color=_ACCENT, hover_color=_ACCENT_HOV,
@@ -148,7 +146,20 @@ class BrightnessGUI(ctk.CTk):
             border_color="#3d3d3d",
             corner_radius=4
         )
+
+        self.autostart_checkbox = ctk.CTkCheckBox(
+            main_frame, text="Start with Windows",
+            command=self.on_autostart_change,
+            **_cb_kwargs
+        )
         self.autostart_checkbox.pack(anchor="w")
+
+        self.softlight_checkbox = ctk.CTkCheckBox(
+            main_frame, text="SoftLight",
+            command=self.on_softlight_change,
+            **_cb_kwargs
+        )
+        self.softlight_checkbox.pack(anchor="w", pady=(8, 0))
 
     # ── Tray icon image ────────────────────────────────────────────────────────
     def create_icon_image(self):
@@ -214,10 +225,14 @@ class BrightnessGUI(ctk.CTk):
                 pass
 
         if self.running:
+            # stop() resets gamma ramp internally
             self.running = False
             self.controller.stop()
             if self.working_thread and self.working_thread.is_alive():
                 self.working_thread.join(timeout=2)
+        else:
+            # Controller wasn't running — still restore gamma if SoftLight was applied
+            self.controller.reset_softlight()
 
         os._exit(0)
 
@@ -241,6 +256,14 @@ class BrightnessGUI(ctk.CTk):
         except Exception as e:
             print(f"Error loading autostart state: {e}")
 
+        try:
+            if self.controller.config.get('softlight_enabled', False):
+                self.softlight_checkbox.select()
+            else:
+                self.softlight_checkbox.deselect()
+        except Exception as e:
+            print(f"Error loading softlight state: {e}")
+
     def on_interval_change(self, val):
         interval = float(val)
         self.interval_label.configure(text=f"{interval:.1f}s")
@@ -255,6 +278,14 @@ class BrightnessGUI(ctk.CTk):
                 self.autostart_checkbox.deselect()
         else:
             self.auto_start_manager.disable()
+
+    def on_softlight_change(self):
+        enabled = bool(self.softlight_checkbox.get())
+        self.controller.config['softlight_enabled'] = enabled
+        self.controller.save_config()
+        if not enabled:
+            # Immediately restore neutral gamma even if controller is running
+            self.controller.reset_softlight()
 
     # ── Controller ────────────────────────────────────────────────────────────
     def start_controller(self):
